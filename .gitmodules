@@ -1,0 +1,3 @@
+[submodule "LoggingPlayground.playgroundbook/Contents/Modules/Logging.playgroundmodule"]
+	path = LoggingPlayground.playgroundbook/Contents/Modules/Logging.playgroundmodule
+	url = https://github.com/apple/swift-log
