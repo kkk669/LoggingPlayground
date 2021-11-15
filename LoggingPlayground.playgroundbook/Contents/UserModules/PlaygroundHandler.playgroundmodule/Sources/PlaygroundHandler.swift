@@ -10,17 +10,19 @@ public struct PlaygroundHandler {
         }
     }
     public var logLevel = Logger.Level.info
-    
+
     public init(label: String) {
         self.label = label
     }
-    
+
     private func prettify(_ metadata: Logger.Metadata) -> String? {
-        !metadata.isEmpty
-            ? metadata.lazy.sorted(by: { $0.key < $1.key }).map { "\($0)=\($1)" }.joined(separator: " ")
-            : nil
+        guard !metadata.isEmpty else { return nil }
+        return metadata.lazy
+            .sorted(by: { $0.key < $1.key })
+            .map { "\($0)=\($1)" }
+            .joined(separator: " ")
     }
-    
+
     private func timestamp() -> String {
         var buffer = [Int8](repeating: 0, count: 255)
         var timestamp = time(nil)
@@ -35,19 +37,35 @@ public struct PlaygroundHandler {
 }
 
 extension PlaygroundHandler: LogHandler {
-    public func log(level: Logger.Level, message: Logger.Message, metadata: Logger.Metadata?, source: String, file: String, function: String, line: UInt) {
-        let prettyMetadata = metadata?.isEmpty ?? true
-            ? self.prettyMetadata
-            : self.prettify(self.metadata.merging(metadata!, uniquingKeysWith: { _, new in new }))
-        print("\(self.timestamp()) \(level) \(self.label) :\(prettyMetadata.map { " \($0)" } ?? "") \(message)")
+    public func log(
+        level: Logger.Level,
+        message: Logger.Message,
+        metadata: Logger.Metadata?,
+        source: String,
+        file: String,
+        function: String,
+        line: UInt
+    ) {
+        let prettyMetadata: String?
+        if let metadata = metadata, !metadata.isEmpty {
+            prettyMetadata = self.prettify(
+                self.metadata.merging(
+                    metadata,
+                    uniquingKeysWith: { _, new in new }
+                )
+            )
+        } else {
+            prettyMetadata = self.prettyMetadata
+        }
+        print(
+            "\(self.timestamp()) [\(self.label)] \(level):\(prettyMetadata.map { " \($0)" } ?? "") \(message)"
+        )
     }
-    
-    public subscript(metadataKey metadataKey: String) -> Logger.Metadata.Value? {
-        get {
-            return self.metadata[metadataKey]
-        }
-        set(newValue) {
-            self.metadata[metadataKey] = newValue
-        }
+
+    public subscript(
+        metadataKey metadataKey: String
+    ) -> Logger.Metadata.Value? {
+        get { self.metadata[metadataKey] }
+        set { self.metadata[metadataKey] = newValue }
     }
 }
