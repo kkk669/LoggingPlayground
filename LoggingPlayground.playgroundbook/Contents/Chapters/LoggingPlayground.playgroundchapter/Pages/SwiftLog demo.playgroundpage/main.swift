@@ -1,4 +1,5 @@
 import Logging
+import LoggingPlayground
 
 LoggingSystem.bootstrap { label in
     var handler = PlaygroundHandler(label: label)
